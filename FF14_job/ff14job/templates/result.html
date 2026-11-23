@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge, role_chip, stars, tags %}
+{% block title %}診断結果：{{ top.job.name }}{% endblock %}
+{% block content %}
+{% set job = top.job %}
+<section class="glass result-hero" style="--c: {{ job.color }}">
+  <div class="result-hero-glow" aria-hidden="true"></div>
+  <p class="eyebrow">{{ icon('sparkle', 16) }} あなたに最も向いているジョブは…</p>
+  <div class="result-hero-main">
+    {{ badge(job, 'xl') }}
+    <div class="result-hero-text">
+      <div class="result-meta">{{ role_chip(job.role) }}<span class="muted">{{ job.en }}</span></div>
+      <h1 class="result-name">{{ job.name }}</h1>
+      <p class="result-catch">{{ job.catch }}</p>
+    </div>
+    <div class="match">
+      <span class="match-label">相性度</span>
+      <span class="match-value"><b data-count="{{ top.score }}">{{ top.score }}</b>%</span>
+    </div>
+  </div>
+
+  <p class="result-desc">{{ job.description }}</p>
+
+  <div class="result-cols">
+    <div>
+      <h3 class="mini-title">相性が良い理由</h3>
+      <ul class="check-list">
+        {% for r in diag.reasons %}<li>{{ icon('check', 15) }}{{ r }}</li>{% else %}<li>{{ icon('check', 15) }}全体的なバランスが最も近いジョブです</li>{% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h3 class="mini-title">こんな人におすすめ</h3>
+      <ul class="check-list">
+        {% for p in job.points %}<li>{{ icon('check', 15) }}{{ p }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <dl class="spec">
+    <div><dt>武器</dt><dd>{{ job.weapon }}</dd></div>
+    <div><dt>開放</dt><dd>{{ job.origin }}</dd></div>
+    <div><dt>実装</dt><dd>{{ job.expansion }}</dd></div>
+    <div><dt>難易度</dt><dd>{{ stars(job.difficulty) }}</dd></div>
+  </dl>
+  {{ tags(job) }}
+</section>
+
+<section class="section">
+  <h2 class="section-title">こちらもおすすめ</h2>
+  <div class="runner-grid">
+    {% for s in runners %}
+    <article class="glass runner" style="--c: {{ s.job.color }}">
+      <span class="runner-rank">{{ loop.index + 1 }}位</span>
+      {{ badge(s.job, 'lg') }}
+      <div class="runner-body">
+        <div class="result-meta">{{ role_chip(s.job.role) }}{{ stars(s.job.difficulty) }}</div>
+        <h3>{{ s.job.name }}<small class="muted"> {{ s.job.en }}</small></h3>
+        <p>{{ s.job.catch }}</p>
+      </div>
+      <span class="runner-score"><b>{{ s.score }}</b>%</span>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section result-grid">
+  <div class="glass panel">
+    <h2 class="panel-title">ロール適性</h2>
+    <ul class="bars">
+      {% for r in diag.roles|sort(attribute='score', reverse=true) %}
+      <li style="--rc: {{ r.role.color }}">
+        <span class="bar-label">{{ r.role.label }}<small class="muted">（{{ r.best.name }}）</small></span>
+        <span class="bar"><i style="width: {{ r.score }}%"></i></span>
+        <span class="bar-val mono">{{ r.score }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="glass panel">
+    <h2 class="panel-title">あなたの特性</h2>
+    <div class="radar-wrap">{{ radar }}</div>
+    <p class="legend"><span class="lg lg-you"></span>あなた <span class="lg lg-job" style="--c: {{ job.color }}"></span>{{ job.name }}</p>
+  </div>
+</section>
+
+<section class="glass panel section">
+  <h2 class="panel-title">特性の傾き</h2>
+  <ul class="poles">
+    {% for t in traits %}
+    <li>
+      <span class="pole pole-left {% if t.value < 0.42 %}on{% endif %}">{{ t.axis.low }}</span>
+      <span class="pole-track"><i style="left: {{ t.pct }}%"></i></span>
+      <span class="pole pole-right {% if t.value > 0.58 %}on{% endif %}">{{ t.axis.high }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="glass panel section">
+  <h2 class="panel-title">全ジョブ相性ランキング</h2>
+  <ol class="ranking">
+    {% for s in diag.ranking %}
+    <li class="{% if loop.index <= 3 %}podium{% endif %}" style="--c: {{ s.job.color }}; --rc: {{ ROLE_MAP[s.job.role].color }}">
+      <span class="rank-no mono">{{ loop.index }}</span>
+      {{ badge(s.job, 'sm') }}
+      <span class="rank-name">{{ s.job.name }}<small class="muted">{{ ROLE_MAP[s.job.role].label }}</small></span>
+      <span class="bar"><i style="width: {{ s.score }}%"></i></span>
+      <span class="bar-val mono">{{ s.score }}%</span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<section class="glass panel section share">
+  <h2 class="panel-title">結果を保存・共有</h2>
+  <p class="muted">この URL を開くと、いつでも同じ診断結果を表示できます。</p>
+  <div class="share-row">
+    <input type="text" id="share-url" value="{{ share_url }}" readonly>
+    <button type="button" class="btn btn-ghost" data-copy="#share-url">{{ icon('copy', 16) }} コピー</button>
+  </div>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('main.quiz') }}">{{ icon('refresh', 16) }} もう一度診断する</a>
+    <a class="btn btn-ghost" href="{{ url_for('main.quiz', a=diag.code) }}">{{ icon('edit', 16) }} 回答を見直す</a>
+    <a class="btn btn-ghost" href="{{ url_for('main.jobs') }}#{{ job.key }}">{{ icon('list', 16) }} ジョブ一覧</a>
+  </div>
+</section>
+{% endblock %}

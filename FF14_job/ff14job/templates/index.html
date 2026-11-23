@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge %}
+{% block title %}トップ{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">{{ icon('sparkle', 16) }} FINAL FANTASY XIV ジョブ適性診断</p>
+  <h1 class="hero-title">あなたに向いている<br><span class="grad">ジョブ</span>はどれ？</h1>
+  <p class="hero-lead">
+    戦い方の好み・操作感・チームプレイのスタイルなど {{ QUESTION_COUNT }} の質問に答えるだけで、
+    全 {{ JOB_COUNT }} の戦闘ジョブから、あなたとの相性をランキングで診断します。
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary btn-lg" href="{{ url_for('main.quiz') }}">診断をはじめる {{ icon('arrow-right', 18) }}</a>
+    <a class="btn btn-ghost btn-lg" href="{{ url_for('main.jobs') }}">{{ icon('list', 18) }} ジョブ一覧を見る</a>
+  </div>
+  <ul class="hero-stats">
+    <li><span>{{ icon('help', 18) }}</span><strong>{{ QUESTION_COUNT }}</strong>問</li>
+    <li><span>{{ icon('clock', 18) }}</span><strong>約5</strong>分</li>
+    <li><span>{{ icon('users', 18) }}</span><strong>{{ JOB_COUNT }}</strong>ジョブ</li>
+    <li><span>{{ icon('radar', 18) }}</span><strong>{{ AXIS_COUNT }}</strong>の特性軸</li>
+  </ul>
+</section>
+
+<section class="section">
+  <h2 class="section-title">診断対象のジョブ</h2>
+  <div class="role-grid">
+    {% for role in ROLES %}
+    <article class="glass role-card" style="--rc: {{ role.color }}">
+      <header><span class="role-dot"></span><h3>{{ role.label }}</h3></header>
+      <p>{{ role.summary }}</p>
+      <div class="badge-row">
+        {% for job in jobs_by_role[role.key] %}{{ badge(job, 'sm') }}{% endfor %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">診断のしくみ</h2>
+  <div class="how-grid">
+    <div class="glass how-card"><span class="how-num">1</span><h3>質問に答える</h3><p>5段階の質問と、好みを選ぶ質問に答えます。数字キー（1〜5）でもサクサク回答できます。</p></div>
+    <div class="glass how-card"><span class="how-num">2</span><h3>特性を分析</h3><p>回答から「守護」「火力」「機動力」「協調」など {{ AXIS_COUNT }} 個の特性値を算出します。</p></div>
+    <div class="glass how-card"><span class="how-num">3</span><h3>相性をランキング</h3><p>各ジョブの特性と照らし合わせ、相性度の高い順に全ジョブをランキング表示します。</p></div>
+  </div>
+  <div class="axis-cloud">
+    {% for a in axes %}<span class="tag">{{ a.label }}<small>{{ a.low }} ⇄ {{ a.high }}</small></span>{% endfor %}
+  </div>
+</section>
+{% endblock %}

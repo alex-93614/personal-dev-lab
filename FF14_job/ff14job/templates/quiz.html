@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}診断{% endblock %}
+{% block main_class %}main-narrow{% endblock %}
+{% block content %}
+<form id="quiz" class="quiz" method="post" action="{{ url_for('main.submit') }}">
+  <div class="quiz-progress">
+    <div class="quiz-progress-head">
+      <span class="muted">質問</span>
+      <span id="progress-count" class="mono">{{ questions|length }} 問</span>
+    </div>
+    <div class="progress"><i id="progress-bar"></i></div>
+  </div>
+
+  {% for q in questions %}
+  {% set qi = loop.index0 %}
+  <section class="glass q-card" data-index="{{ qi }}" aria-labelledby="{{ q.id }}-text">
+    <div class="q-head">
+      <span class="q-num mono">Q{{ loop.index }}</span>
+      <span class="tag">{{ q.category }}</span>
+    </div>
+    <h2 class="q-text" id="{{ q.id }}-text">{{ q.text }}</h2>
+
+    {% if q.kind == 'scale' %}
+    <div class="scale" role="radiogroup" aria-labelledby="{{ q.id }}-text">
+      <span class="scale-end scale-end-left">そう思わない</span>
+      <div class="scale-opts">
+        {% for label in scale_labels %}
+        {% set v = loop.index %}
+        <label class="scale-opt scale-opt-{{ v }}" title="{{ label }}（{{ v }}）">
+          <input type="radio" name="{{ q.id }}" value="{{ v }}" {% if prefill and prefill[qi] == v %}checked{% endif %} required>
+          <span class="scale-dot"></span>
+          <span class="scale-label">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <span class="scale-end scale-end-right">そう思う</span>
+    </div>
+    {% else %}
+    <div class="choices" role="radiogroup" aria-labelledby="{{ q.id }}-text">
+      {% for opt in q.options %}
+      {% set v = loop.index %}
+      <label class="choice">
+        <input type="radio" name="{{ q.id }}" value="{{ v }}" {% if prefill and prefill[qi] == v %}checked{% endif %} required>
+        <span class="choice-key mono">{{ v }}</span>
+        <span class="choice-label">{{ opt.label }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  <div class="quiz-nav">
+    <button type="button" class="btn btn-ghost" id="btn-prev">{{ icon('arrow-left', 16) }} 戻る</button>
+    <span class="quiz-hint muted">キーボード: 数字キーで回答 / ← で戻る</span>
+    <button type="button" class="btn btn-ghost" id="btn-next" hidden>次へ {{ icon('arrow-right', 16) }}</button>
+    <button type="submit" class="btn btn-primary" id="btn-submit">{{ icon('sparkle', 16) }} 診断する</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>{% endblock %}

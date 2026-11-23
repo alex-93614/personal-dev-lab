@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge, stars, tags %}
+{% block title %}ジョブ一覧{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>ジョブ一覧</h1>
+  <p class="muted">診断対象の戦闘ジョブ {{ JOB_COUNT }} 種（青魔道士などのリミテッドジョブは対象外）</p>
+  <nav class="role-jump">
+    {% for role in ROLES %}<a class="role-chip" style="--rc: {{ role.color }}" href="#role-{{ role.key }}">{{ role.label }}</a>{% endfor %}
+  </nav>
+</header>
+
+{% for role in ROLES %}
+<section class="section" id="role-{{ role.key }}">
+  <h2 class="section-title role-title" style="--rc: {{ role.color }}"><span class="role-dot"></span>{{ role.label }}<small class="muted">{{ role.summary }}</small></h2>
+  <div class="job-grid">
+    {% for job in jobs_by_role[role.key] %}
+    <article class="glass job-card" id="{{ job.key }}" style="--c: {{ job.color }}">
+      <header>
+        {{ badge(job, 'lg') }}
+        <div>
+          <h3>{{ job.name }}</h3>
+          <p class="muted">{{ job.en }} ・ {{ job.weapon }}</p>
+        </div>
+        {{ stars(job.difficulty) }}
+      </header>
+      <p class="job-catch">{{ job.catch }}</p>
+      <p class="job-desc">{{ job.description }}</p>
+      {{ tags(job) }}
+      <p class="job-foot muted">{{ job.origin }} ／ {{ job.expansion }}</p>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+<div class="center section">
+  <a class="btn btn-primary btn-lg" href="{{ url_for('main.quiz') }}">自分に合うジョブを診断する {{ icon('arrow-right', 18) }}</a>
+</div>
+{% endblock %}
