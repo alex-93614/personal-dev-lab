@@ -33,10 +33,3 @@ cd d:\Python\App\FF14_job
 起動すると自動でブラウザが開き、`http://ff14job.localhost:5815` が表示されます。
 
 ---
-
-## 🧪 テストの実行
-
-```powershell
-cd d:\Python\App\FF14_job
-..\.venv\Scripts\python.exe -m unittest discover -s tests -v
-```
